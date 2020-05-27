@@ -1,3 +1,0 @@
-<launch>
-    <test test-name="test_run_task" pkg="uuv_simulation_wrapper" type="test_run_task.py"/>    
-</launch>
