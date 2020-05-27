@@ -1,5 +1,0 @@
-<launch>
-    <node pkg="uuv_trajectory_control" type="subscriber_cmd_vel.py" name="listener" output="screen">
-
-</node>
-</launch>
