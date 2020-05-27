@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- REXROV2 in ocean with a pid controller-->
+<!-- REXROV2 in ocean with a pid controller 1-->
 <launch>
   <arg name="limited" default="false" doc="If true, limits joint range [-PI, PI] on all joints." />
   <!-- To find the model -->
