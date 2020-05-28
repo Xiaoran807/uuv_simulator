@@ -43,7 +43,7 @@
 
     <include file="$(find uuv_control_utils)/launch/start_circular_trajectory.launch">
         <arg name="uuv_name" value="rexrov"/>
-        <arg name="radius" value="2"/>
+        <arg name="radius" value="1.5"/>
         <arg name="center_z" value="-25"/>
         <arg name="max_forward_speed" value="0.6"/>
     </include>
