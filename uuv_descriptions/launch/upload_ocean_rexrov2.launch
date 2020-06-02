@@ -62,7 +62,9 @@
     <arg name="yaw" value="$(arg yaw)"/>
     <arg name="use_ned_frame" value="$(arg use_ned_frame)"/>
     <arg name="namespace" value="rexrov"/>
-  </include>
+  </include>c
+
+  <include file="$(find gazebo_description)/launch/spawn_simple_box.launch"/>
 
   <!-- Controller for the ROV -->
   <include file="$(find rexrov2_control)/launch/start_pid_controller.launch">
