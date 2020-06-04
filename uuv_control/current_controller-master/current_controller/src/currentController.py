@@ -24,18 +24,20 @@ class currentController():
         self.vel = 0.0
         self.v_dir = 0.0
         self.h_dir = 0.0
-        self.periodicUpdate = rospy.Timer(rospy.Duration(1.0), self.updateCurrent)
-        self.counter = 0.0
+        self.counter=0
+        self.periodicUpdate = rospy.Timer(rospy.Duration(.2), self.updateCurrent)
+        self.N = 0.0
     def updateCurrent(self, event):
-        #self.vel = np.random.random(1)[0]
-	self.vel = np.random.uniform(0.5, 1.5)
-        self.v_dir = np.sin(self.counter)
-        #self.h_dir = 0.0
-	self.h_dir = np.cos(self.counter)
+        self.N = np.random.uniform(0, 1)
+	self.vel = np.random.uniform(0.1, 1)
+        #self.v_dir =np.cos(self.counter)
+        #self.h_dir=np.sin(self.counter)
+        self.v_dir = np.random.uniform(0, 3.5)
+	self.h_dir = np.random.uniform(0, 3.5)
         print (self.vel, "   ", self.v_dir, "   ", self.h_dir)
         self.setCurrent(self.vel,self.v_dir, self.h_dir)
-        self.counter += 0.1
-        
+        self.counter+=0.3;
+
 if __name__ == '__main__':
     try:
         rospy.init_node('currentController', log_level=rospy.DEBUG)
