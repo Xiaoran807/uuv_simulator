@@ -26,7 +26,13 @@
     <include file="$(find uuv_gazebo_worlds)/launch/empty_underwater_world.launch">
         <arg name="set_timeout" value="true"/>
         <arg name="timeout" value="$(arg timeout)"/>
-    </include>
+    </include>  
+<?ignore
+    <include file="$(find uuv_gazebo_worlds)/launch/ocean_waves_empty.launch">
+    </include> 
+?>
+<?ignore  <include file="$(find gazebo_description)/launch/spawn_objectUnderwater.launch"/> ?>
+
 
     <include file="$(find uuv_descriptions)/launch/upload_rexrov.launch">
         <arg name="x" default="$(arg x)"/>
@@ -34,16 +40,20 @@
         <arg name="z" default="$(arg z)"/>
         <arg name="yaw" default="$(arg yaw)"/>
     </include>
-
+<?ignore
     <include file="$(find uuv_trajectory_control)/launch/rov_mb_sm_controller.launch">
         <arg name="uuv_name" value="rexrov"/>
         <arg name="model_name" value="rexrov"/>
-
+    </include>
+?>
+    <include file="$(find uuv_trajectory_control)/launch/rov_pid_controller.launch">
+        <arg name="uuv_name" value="rexrov"/>
+        <arg name="model_name" value="rexrov"/>
     </include>
 
     <include file="$(find uuv_control_utils)/launch/start_circular_trajectory.launch">
         <arg name="uuv_name" value="rexrov"/>
-        <arg name="radius" value="1.5"/>
+        <arg name="radius" value="15"/>
         <arg name="center_z" value="-25"/>
         <arg name="max_forward_speed" value="0.6"/>
     </include>

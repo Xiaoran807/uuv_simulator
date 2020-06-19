@@ -10,6 +10,7 @@ add_message_files(
   FILES
   Trajectory.msg
   TrajectoryPoint.msg
+  TrajectoryPointObjectFollow.msg
   Waypoint.msg
   WaypointSet.msg
   Matrix6.msg

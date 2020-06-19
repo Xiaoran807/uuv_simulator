@@ -15,10 +15,11 @@
 import numpy as np
 import rospy
 from uuv_control_msgs.srv import *
-from .dp_controller_base import DPControllerBase
+#from .dp_controller_base import DPControllerBase
+from .dp_controller_base1 import DPControllerBase1
 
-
-class DPPIDControllerBase(DPControllerBase):
+#class DPPIDControllerBase(DPControllerBase):
+class DPPIDControllerBase(DPControllerBase1):
     """Abstract class for PID-based controllers. The base 
     class method `update_controller` must be overridden 
     in other for a controller to work.
@@ -26,7 +27,9 @@ class DPPIDControllerBase(DPControllerBase):
 
     def __init__(self, *args):
         # Start the super class
-        DPControllerBase.__init__(self, *args)
+        
+        #DPControllerBase.__init__(self, *args)
+        DPControllerBase1.__init__(self, *args)
         self._logger.info('Initializing: PID controller')
         # Proportional gains
         self._Kp = np.zeros(shape=(6, 6))
