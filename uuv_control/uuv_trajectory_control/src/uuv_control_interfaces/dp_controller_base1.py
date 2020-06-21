@@ -22,7 +22,7 @@ import tf
 from rospy.numpy_msg import numpy_msg
 from geometry_msgs.msg import WrenchStamped, PoseStamped, TwistStamped, \
     Vector3, Quaternion, Pose, Twist, Point
-from std_msgs.msg import Time
+from std_msgs.msg import Time, Float32
 from nav_msgs.msg import Odometry
 from uuv_control_interfaces.vehicle import Vehicle
 from tf_quaternion.transformations import euler_from_quaternion, \
@@ -35,6 +35,9 @@ from uuv_auv_control_allocator.msg import AUVCommand
 from .dp_controller_local_planner import DPControllerLocalPlanner as LocalPlanner
 from ._log import get_logger
 from std_msgs.msg import Int32
+import sys
+sys.path.insert(1, '/home/xiaoran/catkin_ws/src/uuv_simulator/uuv_control/uuv_trajectory_control/src/utils')
+import geo_maths as geo_maths
 
 class DPControllerBase1(object):
     """General abstract class for DP controllers for underwater vehicles.
@@ -218,17 +221,21 @@ class DPControllerBase1(object):
         # Stores last simulation time
         self._prev_t = -1.0
         self._logger.info('DP controller successfully initialized')
-        self._boxOdom_topic_sub=rospy.Subscriber('/ground_truth/stateRexRov', numpy_msg(Odometry), self.objectCallback)
-  
-        self.ref_manuPosition=np.array([0, 0, 0]);
-        self.ref_manuOrientation=np.array([0, 0, 0, 0]);
-        self.ref_manuVelocityLinear=np.array([0, 0, 0]);
-        self.ref_manuVelocityAngular=np.array([0, 0, 0]);
 
+        self._boxOdom_topic_sub=rospy.Subscriber('/ground_truth/stateRexRov', Odometry, self.objectCallback)
+        self.ref_boxPosition=np.array([0, 0, 0]);
+        self.ref_boxOrientation=np.array([0, 0, 0, 0]);
+        self.ref_boxVelocityLinear=np.array([0, 0, 0]);
+        self.ref_boxVelocityAngular=np.array([0, 0, 0]);
         self.object_position=np.array([0, 0, 0]);
         self.object_orientation=np.array([0, 0, 0, 0]);
+        self.q=np.array([0, 0, 0, 0]);
         self.object_velocityLinear=np.array([0, 0, 0]);
         self.object_velocityAngular=np.array([0, 0, 0]);
+        self.pose_xytheta=Pose;
+        self.x_wg=Float32()
+        self.y_wg=Float32()
+        self.theta_wg=Float32()
 
     def __del__(self):
         # Removing logging message handlers
@@ -322,23 +329,37 @@ class DPControllerBase1(object):
             inertial_frame_id=self._local_planner.inertial_frame_id) 
 
     def objectCallback(self, data):
+        self.pose=geo_maths.pose_to_xytheta(data.pose.pose);
+        T_wb = geo_maths.xytheta_to_T(self.pose[0], self.pose[1], self.pose[2]);
+        T_bg = geo_maths.xytheta_to_T(12, 0, 0);
+        T_wg = np.dot(T_wb, T_bg);
+        self.x_wg.data, self.y_wg.data, self.theta_wg.data = geo_maths.T_to_xytheta(T_wg)
+        self.q = geo_maths.theta_to_quaternion(self.theta_wg.data)
+        self.ref_boxPosition[0]=self.x_wg.data
+        self.ref_boxPosition[1]=self.y_wg.data
+        #self.ref_boxOrientation[0]=q.x
+        #self.ref_boxOrientation[1]=q.y
+        #self.ref_boxOrientation[2]=q.z
+        #self.ref_boxOrientation[3]=q.w
+
         self.object_position=data.pose.pose.position;
         self.object_orientation=data.pose.pose.orientation;
         self.object_velocityLinear=data.twist.twist.linear;
         self.object_velocityAngular=data.twist.twist.angular;
-        self.ref_manuPosition[0]=self.object_position.x
-        self.ref_manuPosition[1]=self.object_position.y
-        self.ref_manuPosition[2]=self.object_position.z
-        self.ref_manuOrientation[0]=self.object_orientation.x
-        self.ref_manuOrientation[1]=self.object_orientation.y
-        self.ref_manuOrientation[2]=self.object_orientation.z
-        self.ref_manuOrientation[3]=self.object_orientation.w
-        self.ref_manuVelocityLinear[0]=self.object_velocityLinear.x
-        self.ref_manuVelocityLinear[1]=self.object_velocityLinear.y
-        self.ref_manuVelocityLinear[2]=self.object_velocityLinear.z
-        self.ref_manuVelocityAngular[0]=self.object_velocityAngular.x
-        self.ref_manuVelocityAngular[1]=self.object_velocityAngular.y
-        self.ref_manuVelocityAngular[2]=self.object_velocityAngular.z
+        #self.ref_boxPosition[0]=self.object_position.x
+        #self.ref_boxPosition[1]=self.object_position.y
+        self.ref_boxPosition[2]=self.object_position.z
+        self.ref_boxOrientation[0]=self.object_orientation.x
+        self.ref_boxOrientation[1]=self.object_orientation.y
+        self.ref_boxOrientation[2]=self.object_orientation.z
+        self.ref_boxOrientation[3]=self.object_orientation.w
+        
+        self.ref_boxVelocityLinear[0]=self.object_velocityLinear.x
+        self.ref_boxVelocityLinear[1]=self.object_velocityLinear.y
+        self.ref_boxVelocityLinear[2]=self.object_velocityLinear.z
+        self.ref_boxVelocityAngular[0]=self.object_velocityAngular.x
+        self.ref_boxVelocityAngular[1]=self.object_velocityAngular.y
+        self.ref_boxVelocityAngular[2]=self.object_velocityAngular.z
 
     def _update_reference(self):
         """Call the local planner interpolator to retrieve a trajectory 
@@ -423,16 +444,16 @@ class DPControllerBase1(object):
             #    rotItoB, self._reference['pos'] - pos)
 
             self._errors['pos'] = np.dot(
-                rotItoB, self.ref_manuPosition- pos)
+                rotItoB, self.ref_boxPosition- pos)
 
             # Update orientation error
             self._errors['rot'] = quaternion_multiply(
-                quaternion_inverse(quat), self.ref_manuOrientation)
+                quaternion_inverse(quat), [self.q.x, self.q.y, self.q.z, self.q.w])
 
             # Velocity error with respect to the the BODY frame
             self._errors['vel'] = np.hstack((
-                np.dot(rotItoB, self.ref_manuVelocityLinear) - vel[0:3],
-                np.dot(rotItoB, self.ref_manuVelocityAngular) - vel[3:6]))
+                np.dot(rotItoB, self.ref_boxVelocityLinear) - vel[0:3],
+                np.dot(rotItoB, self.ref_boxVelocityAngular) - vel[3:6]))
 
         if self._error_pub.get_num_connections() > 0:
             stamp = rospy.Time.now()
