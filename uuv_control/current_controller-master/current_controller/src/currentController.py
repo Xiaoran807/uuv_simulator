@@ -25,15 +25,15 @@ class currentController():
         self.v_dir = 0.0
         self.h_dir = 0.0
         self.counter=0
-        self.periodicUpdate = rospy.Timer(rospy.Duration(.2), self.updateCurrent)
+        self.periodicUpdate = rospy.Timer(rospy.Duration(2), self.updateCurrent) ## 0.2
         self.N = 0.0
     def updateCurrent(self, event):
         self.N = np.random.uniform(0, 1)
-	self.vel = np.random.uniform(0.5, 2)
+	self.vel = np.random.uniform(0.5, 1) ## 0.5, 2
         #self.v_dir =np.cos(self.counter)
         #self.h_dir=np.sin(self.counter)
-        self.v_dir = np.random.uniform(0, 4)
-	self.h_dir = np.random.uniform(0, 4)
+        self.v_dir = np.random.uniform(0, 4) ## 0, 4
+	self.h_dir = np.random.uniform(0, 4) ## 0, 4
         print (self.vel, "   ", self.v_dir, "   ", self.h_dir)
         self.setCurrent(self.vel,self.v_dir, self.h_dir)
         self.counter+=0.3;

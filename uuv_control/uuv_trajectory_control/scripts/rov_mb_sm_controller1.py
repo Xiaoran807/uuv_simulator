@@ -16,18 +16,23 @@
 from __future__ import print_function
 import rospy
 import numpy as np
-from uuv_control_interfaces import DPControllerBase1
+from uuv_control_interfaces import DPPIDControllerBase
 from uuv_control_msgs.srv import *
 from uuv_control_interfaces.vehicle import cross_product_operator
 from std_msgs.msg import Int32
 
 
-
-class ROV_MB_SMController(DPControllerBase1):
-    _LABEL = 'Model-based Sliding Mode Controller'
+class ROV_MB_SMController(DPPIDControllerBase):
+    """
+    Modelbased Feedback Linearization Controller
+    Reference:
+    Thor I. Fossen 2011
+    Handbook of Marine Craft Hydrodynamics and Motion Control
+    """
+    _LABEL = 'Model-based Feedback Linearization Controller'
 
     def __init__(self):
-        DPControllerBase1.__init__(self, True)
+        DPPIDControllerBase.__init__(self, True)
         self._logger.info('Initializing: ' + self._LABEL)
 
         # Lambda - Slope of the Sliding Surface
@@ -190,6 +195,9 @@ class ROV_MB_SMController(DPControllerBase1):
         self._is_init = True
         self._logger.info(self._LABEL + ' ready')
 
+
+
+
     def _reset_controller(self):
         super(ROV_MB_SMController, self)._reset_controller()
         self._sliding_int = 0
@@ -320,15 +328,9 @@ class ROV_MB_SMController(DPControllerBase1):
         self._prev_t = t
 
 
-
-
-
-
 if __name__ == '__main__':
     print('Starting Model-based Sliding Mode Controller')
     rospy.init_node('rov_mb_sm_controller')
-
-
 
     try:
         node = ROV_MB_SMController()

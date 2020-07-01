@@ -12,31 +12,32 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License. Try commit and next
+# limitations under the License.
+
 import rospy
 import numpy as np
-from uuv_control_interfaces import DPControllerBase
+from uuv_control_interfaces import DPPIDControllerBase
 from uuv_control_msgs.srv import *
 
-
-class ROV_NMB_SMController(DPControllerBase):
+class ROV_NMB_SMController(DPPIDControllerBase):
     """
-    Model-free sliding mode controller based on the work published in [1] and
-    [2], or model-free high order sliding mode controller.
-
-    [1] Garcia-Valdovinos, Luis Govinda, et al. "Modelling, design and robust
-        control of a remotely operated underwater vehicle." International
-        Journal of Advanced Robotic Systems 11.1 (2014): 1.
-    [2] Salgado-Jimenez, Tomas, Luis G. Garcia-Valdovinos, and Guillermo
-        Delgado-Ramirez. "Control of ROVs using a Model-free 2nd-Order Sliding
-        Mode Approach." Sliding Mode Control (2011): 347-368.
+    Modelbased Feedback Linearization Controller
+    Reference:
+    Thor I. Fossen 2011
+    Handbook of Marine Craft Hydrodynamics and Motion Control
     """
-
-    _LABEL = 'Model-free Sliding Mode Controller'
+    _LABEL = 'Model-based Feedback Linearization Controller'
 
     def __init__(self):
-        DPControllerBase.__init__(self, is_model_based=False)
+        DPPIDControllerBase.__init__(self, True)
         self._logger.info('Initializing: ' + self._LABEL)
+
+        # Control forces and torques
+        self._tau = np.zeros(6)
+        # PID control vector
+        self._is_init = True
+        self._logger.info(self._LABEL + ' ready')
+
         self._first_pass = True
         self._t_init = 0.0
         self._s_linear_b_init = np.array([0, 0, 0])
@@ -102,7 +103,7 @@ class ROV_NMB_SMController(DPControllerBase):
         self._prev_sign_sn_linear_b = np.array([0, 0, 0])
         self._prev_sign_sn_angular_b = np.array([0, 0, 0])
 
-        self._tau = np.zeros(6)
+
 	self._tauForce=np.zeros(3)
 
         self._services['set_sm_controller_params'] = rospy.Service(
@@ -114,8 +115,11 @@ class ROV_NMB_SMController(DPControllerBase):
             GetSMControllerParams,
             self.get_sm_controller_params_callback)
 
-        self._is_init = True
+   
         self._logger.info(self._LABEL + ' ready')
+
+
+
 
     def _reset_controller(self):
         super(ROV_NMB_SMController, self)._reset_controller()
@@ -220,6 +224,7 @@ class ROV_NMB_SMController(DPControllerBase):
             else:
                 output[i] = vec[i]
         return output
+
 
 if __name__ == '__main__':
     print('Starting Non-model-based Sliding Mode Controller')

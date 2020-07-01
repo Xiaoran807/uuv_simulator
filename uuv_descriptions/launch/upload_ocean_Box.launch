@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!-- REXROV2 in ocean with a pid controller 1-->
+<launch>
+  <arg name="limited" default="false" doc="If true, limits joint range [-PI, PI] on all joints." />
+  <!-- To find the model -->
+<!--  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find iiwa_description)/sdf"/>-->
+
+  <arg name = "paused" default = "false"/>
+  <arg name = "use_sim_time" default = "true"/>
+  <arg name = "gui" default = "true"/>
+  <arg name = "headless" default = "false"/>
+  <arg name = "debug" default = "false"/>
+  <arg name = "verbose" default = "true"/> 
+
+  <!-- Load underwater World empty_underwater_world -->
+  <include file="$(find uuv_gazebo_worlds)/launch/ocean_waves_empty.launch">  
+
+  <!-- <include file="$(find gazebo_ros)/launch/empty_world.launch"> -->
+
+  </include>
+
+
+
+
+  <include file="$(find gazebo_description)/launch/spawn_objectUnderwater.launch"/>  
+
+
+
+  <!-- push robot_description to factory and spawn robot in gazebo 
+  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.1" respawn="false" output="screen" />
+-->
+
+
+  <!-- load other controllers -->
+  <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false" output="screen" args="load joint_group_position_controller" />
+
+ <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find uuv_gazebo)/rviz/controller_demo.rviz"/>
+</launch>

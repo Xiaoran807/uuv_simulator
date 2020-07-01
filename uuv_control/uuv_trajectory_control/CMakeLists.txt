@@ -15,10 +15,13 @@ catkin_package()
 
 catkin_install_python(PROGRAMS scripts/rov_nl_pid_controller.py
                                scripts/rov_mb_sm_controller.py
+                               scripts/rov_mb_sm_controller1.py
                                scripts/rov_nmb_sm_controller.py
+                               scripts/rov_nmb_sm_controller1.py
                                scripts/rov_pid_controller.py
                                scripts/rov_ua_pid_controller.py
                                scripts/rov_mb_fl_controller.py
+                               scripts/rov_mb_fl_controller1.py
                                scripts/auv_geometric_tracking_controller.py
                                scripts/demo_wp_trajectory_generator.py
                                scripts/rov_pd_grav_compensation_controller.py

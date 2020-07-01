@@ -13,30 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import rospy
 import numpy as np
 from uuv_control_interfaces import DPPIDControllerBase
-from uuv_control_msgs.srv import *
+
 
 class ROV_MBFLController(DPPIDControllerBase):
-    """
-    Modelbased Feedback Linearization Controller
-    Reference:
-    Thor I. Fossen 2011
-    Handbook of Marine Craft Hydrodynamics and Motion Control
-    """
-    _LABEL = 'Model-based Feedback Linearization Controller'
+    """PID controller for the dynamic positioning of ROVs."""
 
+    _LABEL = 'PID'
     def __init__(self):
-        DPPIDControllerBase.__init__(self, True)
-        self._logger.info('Initializing: ' + self._LABEL)
-
-        # Control forces and torques
         self._tau = np.zeros(6)
-        # PID control vector
-        self._pid_control = np.zeros(6)
+        DPPIDControllerBase.__init__(self, False)
         self._is_init = True
+        self._pid_control = np.zeros(6)
         self._last_vel = np.zeros(6)
         self._last_t = None
         self._logger.info(self._LABEL + ' ready')
@@ -80,16 +70,16 @@ class ROV_MBFLController(DPPIDControllerBase):
                     self._vehicle_model.restoring_forces
                     
         # Publish control forces and torques
-        #self.publish_control_wrench(self._pid_control + self._vehicle_model.from_SNAME(self._tau))
-        self.publish_control_wrench(self._pid_control)
+        self.publish_control_wrench(self._pid_control + self._vehicle_model.from_SNAME(self._tau))
+        #self.publish_control_wrench(self._pid_control)
         self._last_t = t
         self._last_vel = self._vehicle_model.to_SNAME(self._reference['vel'])
         return True
 
 
 if __name__ == '__main__':
-    print('Starting Modelbased Feedback Linearization Controller')
-    rospy.init_node('rov_mb_fl_controller')
+    print('Starting PID')
+    rospy.init_node('rov_pid_controller')
 
     try:
         node = ROV_MBFLController()

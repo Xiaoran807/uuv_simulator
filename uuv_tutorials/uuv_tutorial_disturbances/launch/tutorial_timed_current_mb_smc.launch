@@ -40,17 +40,17 @@
         <arg name="z" default="$(arg z)"/>
         <arg name="yaw" default="$(arg yaw)"/>
     </include>
-<?ignore
+
     <include file="$(find uuv_trajectory_control)/launch/rov_mb_sm_controller.launch">
         <arg name="uuv_name" value="rexrov"/>
         <arg name="model_name" value="rexrov"/>
     </include>
-?>
+<?ignore
     <include file="$(find uuv_trajectory_control)/launch/rov_pid_controller.launch">
         <arg name="uuv_name" value="rexrov"/>
         <arg name="model_name" value="rexrov"/>
     </include>
-
+?>
     <include file="$(find uuv_control_utils)/launch/start_circular_trajectory.launch">
         <arg name="uuv_name" value="rexrov"/>
         <arg name="radius" value="15"/>

@@ -331,7 +331,7 @@ class DPControllerBase1(object):
     def objectCallback(self, data):
         self.pose=geo_maths.pose_to_xytheta(data.pose.pose);
         T_wb = geo_maths.xytheta_to_T(self.pose[0], self.pose[1], self.pose[2]);
-        T_bg = geo_maths.xytheta_to_T(12, 0, 0);
+        T_bg = geo_maths.xytheta_to_T(13, 0, 0);
         T_wg = np.dot(T_wb, T_bg);
         self.x_wg.data, self.y_wg.data, self.theta_wg.data = geo_maths.T_to_xytheta(T_wg)
         self.q = geo_maths.theta_to_quaternion(self.theta_wg.data)
@@ -373,9 +373,15 @@ class DPControllerBase1(object):
         reference = self._local_planner.interpolate(t)
 
         if reference is not None:
-            self._reference['pos'] = reference.p
-            self._reference['rot'] = reference.q
-            self._reference['vel'] = np.hstack((reference.v, reference.w))
+           # self._reference['pos'] = reference.p
+           # self._reference['rot'] = reference.q
+           # self._reference['vel'] = np.hstack((reference.v, reference.w))
+
+            self._reference['pos'] = self.ref_boxPosition
+            self._reference['rot'] = [self.q.x, self.q.y, self.q.z, self.q.w]
+            self._reference['vel'] = np.hstack((self.ref_boxVelocityLinear, self.ref_boxVelocityAngular))
+
+
             #self._reference['acc'] = np.hstack((reference.a, reference.alpha))
         if reference is not None and self._reference_pub.get_num_connections() > 0:
             # Publish current reference
@@ -440,20 +446,25 @@ class DPControllerBase1(object):
             pos = self._vehicle_model.pos
             vel = self._vehicle_model.vel
             quat = self._vehicle_model.quat
-            #self._errors['pos'] = np.dot(
-            #    rotItoB, self._reference['pos'] - pos)
-
             self._errors['pos'] = np.dot(
-                rotItoB, self.ref_boxPosition- pos)
+                rotItoB, self._reference['pos'] - pos)
+            #self._errors['pos'] = np.dot(
+            #    rotItoB, self.ref_boxPosition- pos)
 
             # Update orientation error
+           # self._errors['rot'] = quaternion_multiply(
+           #     quaternion_inverse(quat), [self.q.x, self.q.y, self.q.z, self.q.w])
             self._errors['rot'] = quaternion_multiply(
-                quaternion_inverse(quat), [self.q.x, self.q.y, self.q.z, self.q.w])
+                quaternion_inverse(quat), self._reference['rot'])
 
             # Velocity error with respect to the the BODY frame
+           # self._errors['vel'] = np.hstack((
+           #     np.dot(rotItoB, self.ref_boxVelocityLinear) - vel[0:3],
+           #     np.dot(rotItoB, self.ref_boxVelocityAngular) - vel[3:6]))
+
             self._errors['vel'] = np.hstack((
-                np.dot(rotItoB, self.ref_boxVelocityLinear) - vel[0:3],
-                np.dot(rotItoB, self.ref_boxVelocityAngular) - vel[3:6]))
+                np.dot(rotItoB, self._reference['vel'][0:3]) - vel[0:3],
+                np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
 
         if self._error_pub.get_num_connections() > 0:
             stamp = rospy.Time.now()

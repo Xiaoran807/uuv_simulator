@@ -1,0 +1,92 @@
+<launch>
+    <!-- Setup for a timeout for the simulation run -->
+    <arg name="set_timeout" default="false"/>
+    <arg name="timeout" default="105"/>
+    <!-- Parameters for the current velocity model -->
+    <arg name="starting_time" default="10"/>
+    <arg name="end_time" default="40"/>
+    <!-- Magnitude of the current velocity in m/s -->
+    <arg name="current_vel" default="0.7"/>
+    <!-- Angles given in degrees -->
+    <arg name="horizontal_angle" default="50"/>
+    <arg name="vertical_angle" default="20"/>
+
+    <!-- Vehicle's initial position -->
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="-20"/>
+    <arg name="yaw" default="0"/>
+
+    <!-- nmbsmc Controller parameters -->
+    <arg name="K" default="5,5,5,5,5,5"/>
+    <arg name="Kd" default="4118.98,4118.98,4118.98,8000.0,8000.0,8000.0"/>
+    <arg name="Ki" default="0.06144,0.06144,0.06144,0.078,0.078,0.078"/>
+    <arg name="slope" default="0.182,0.182,0.182,3.348,3.348,3.348"/>
+
+
+
+<?ignore
+    <arg name="Kp" default="11993.888,11993.888,11993.888,19460.069,19460.069,19460.069" doc="Coefficients for the $K_p$ diagonal matrix"/>
+    <arg name="Kd" default="9077.459,9077.459,9077.459,18880.925,18880.925,18880.925" doc="Coefficients for the $K_d$ diagonal matrix"/>
+    <arg name="Ki" default="321.417,321.417,321.417,2096.951,2096.951,2096.951" doc="Coefficients for the $K_i$ diagonal matrix"/>
+?>
+
+  <!-- Thruster manager configuration -->
+    <arg name="thruster_manager_output_dir" default="$(find rexrov2_control)/config" doc="Output directory for the generated thruster manager"/>
+    <arg name="thruster_manager_config_file" default="$(find rexrov2_control)/config/thruster_manager.yaml" doc="File storing the configuration of the thruster manager"/>
+    <arg name="tam_file" default="$(find rexrov2_control)/config/TAM.yaml" doc="File storing the thruster allocation matrix"/>
+
+
+    <include file="$(find uuv_gazebo_worlds)/launch/empty_underwater_world.launch">
+        <arg name="set_timeout" value="true"/>
+        <arg name="timeout" value="$(arg timeout)"/>
+    </include>
+
+    <include file="$(find uuv_descriptions)/launch/upload_rexrov.launch">
+        <arg name="x" default="$(arg x)"/>
+        <arg name="y" default="$(arg y)"/>
+        <arg name="z" default="$(arg z)"/>
+        <arg name="yaw" default="$(arg yaw)"/>
+    </include>
+
+<?ignore   <include file="$(find uuv_trajectory_control)/launch/rov_nmb_sm_controller.launch">
+        <arg name="uuv_name" value="rexrov"/>
+        <arg name="model_name" value="rexrov"/>
+        <arg name="K" value="$(arg K)"/>
+        <arg name="Kd" value="$(arg Kd)"/>
+        <arg name="Ki" value="$(arg Ki)"/>
+        <arg name="slope" value="$(arg slope)"/>
+    </include>
+?>
+
+  <include file="$(find uuv_trajectory_control)/launch/rov_nl_pid_controller.launch">
+    <arg name="uuv_name" value="rexrov"/>
+    <arg name="model_name" value="rexrov"/>
+    <arg name="use_ned_frame" value="false"/>
+  </include>
+
+
+
+    <include file="$(find gazebo_description)/launch/spawn_objectUnderwater.launch"/>   
+
+
+<?ignore
+
+    <include file="$(find uuv_trajectory_control)/launch/rov_pid_controller.launch">
+      <arg name="uuv_name" value="rexrov"/>
+      <arg name="gui_on" value="true"/>
+      <arg name="saturation" value="2000"/>
+      <arg name="Kp" value="$(arg Kp)"/>
+      <arg name="Kd" value="$(arg Kd)"/>
+      <arg name="Ki" value="$(arg Ki)"/>
+      <arg name="use_ned_frame" value="false"/>
+      <arg name="thruster_manager_output_dir" value="$(arg thruster_manager_output_dir)"/>
+      <arg name="thruster_manager_config_file" value="$(arg thruster_manager_config_file)"/>
+      <arg name="tam_file" value="$(arg tam_file)"/>
+    </include>
+?>
+
+
+
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find uuv_gazebo)/rviz/controller_demo.rviz"/>
+</launch>
