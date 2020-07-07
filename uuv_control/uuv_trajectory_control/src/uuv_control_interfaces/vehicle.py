@@ -151,6 +151,7 @@ class Vehicle(object):
 
         # Calculating the rigid-body mass matrix
         self._M = np.zeros(shape=(6, 6), dtype=float)
+
         self._M[0:3, 0:3] = self._mass * np.eye(3)
         self._M[0:3, 3:6] = - self._mass * \
             cross_product_operator(self._cog)
@@ -508,6 +509,7 @@ class Vehicle(object):
 
     def _calc_mass_matrix(self):
         self._Mtotal = self._M + self._Ma
+
 
     def _update_coriolis(self, vel=None):
         if vel is not None:

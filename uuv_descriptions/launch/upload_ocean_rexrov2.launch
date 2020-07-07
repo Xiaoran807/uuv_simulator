@@ -91,11 +91,11 @@
   </include>
 ?>
 
-  <include file="$(find rexrov2_control)/launch/start_mb_fl_controller1.launch">
+<?ignore  <include file="$(find rexrov2_control)/launch/start_mb_fl_controller1.launch">
     <arg name="uuv_name" default="rexrov2"/>
     <arg name="gui_on" default="false" />
   </include>
-
+?>
 
 <?ignore  <include file="$(find rexrov2_control)/launch/start_pd_grav_compensation_controller.launch">
     <arg name="uuv_name" default="rexrov2"/>
@@ -103,11 +103,11 @@
   </include>
 ?>
 
-<?ignore  <include file="$(find rexrov2_control)/launch/start_mb_sm_controller.launch">
+  <include file="$(find rexrov2_control)/launch/start_mb_sm_controller.launch">
     <arg name="uuv_name" default="rexrov2"/>
     <arg name="gui_on" default="false" />
   </include>
-?>
+
 
 
 
@@ -133,5 +133,6 @@
   <!-- load other controllers -->
   <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false" output="screen" args="load joint_group_position_controller" />
 
- <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find uuv_gazebo)/rviz/controller_demo.rviz"/>
+<?ignore <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find uuv_gazebo)/rviz/controller_demo.rviz"/>
+?>
 </launch>

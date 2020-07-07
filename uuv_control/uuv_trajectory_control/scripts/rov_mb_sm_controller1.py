@@ -52,6 +52,7 @@ class ROV_MB_SMController(DPPIDControllerBase):
         self._rho_0 = np.zeros(6)
         # Drift prevent - Drift prevention slope
         self._drift_prevent = 0
+        self._pid_control = np.zeros(6)
 
         if rospy.has_param('~lambda'):
             coefs = rospy.get_param('~lambda')
@@ -223,7 +224,7 @@ class ROV_MB_SMController(DPPIDControllerBase):
 	self._slidingSurface=np.zeros(6)
 	self._vel=np.zeros(3)
 	self._vehi=np.zeros(1)
-	
+	self._pid_control = np.zeros(6)
 
     def set_mb_sm_controller_params_callback(self, request):
         return SetMBSMControllerParamsResponse(True)
@@ -301,16 +302,24 @@ class ROV_MB_SMController(DPPIDControllerBase):
         self._f_robust = - np.multiply(self._rho_total, (2 / np.pi) * np.arctan(np.multiply(self._c, self._s_b)))
 
         # Compute required forces and torques wrt body frame
-        self._tau = self._ctrl_eq * self._f_eq + self._ctrl_lin * self._f_lin + self._ctrl_robust * self._f_robust
-    #    self._tau = self._ctrl_eq * self._f_eq + self._ctrl_lin * self._f_lin
-	#self._vel=self._vehicle_model._vel[3:6]
+        #self._tau = self._ctrl_eq * self._f_eq + self._ctrl_lin * self._f_lin + self._ctrl_robust * self._f_robust
+
+
+
+        self._pid_control = self.update_pid()
+        self._tau[0] = 100
+        self._tau[1] = 100
+        self._tau[2] = self._pid_control[2]
+        self._tau[3] = self._pid_control[3]
+        self._tau[4] = self._pid_control[4]
+        self._tau[5] = self._pid_control[5]
+
+
 
 	self._slidingSurface=self._s_b
-	self._vehi=self._vehicle_model._Ma[5,5]
-	
-	#self._generalForce=self._vehicle_model.f
+	self._vehi=self._vehicle_model._Ma[2,2]
 	self._restoring=self._vehicle_model._g
-        self._MPara=self._vehicle_model._Mtotal
+        self._MPara=self._vehicle_model._linear_damping
         self._CPara=self._vehicle_model._C
         self._DPara=self._vehicle_model._D
         self._velocity=self._vehicle_model._vel

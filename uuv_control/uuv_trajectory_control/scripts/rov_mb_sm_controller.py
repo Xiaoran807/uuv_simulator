@@ -16,18 +16,18 @@
 from __future__ import print_function
 import rospy
 import numpy as np
-from uuv_control_interfaces import DPControllerBase1
+from uuv_control_interfaces import DPControllerBase
 from uuv_control_msgs.srv import *
 from uuv_control_interfaces.vehicle import cross_product_operator
 from std_msgs.msg import Int32
 
 
 
-class ROV_MB_SMController(DPControllerBase1):
+class ROV_MB_SMController(DPControllerBase):
     _LABEL = 'Model-based Sliding Mode Controller'
 
     def __init__(self):
-        DPControllerBase1.__init__(self, True)
+        DPControllerBase.__init__(self, True)
         self._logger.info('Initializing: ' + self._LABEL)
 
         # Lambda - Slope of the Sliding Surface
@@ -260,16 +260,16 @@ class ROV_MB_SMController(DPControllerBase1):
 
         # Acceleration estimate
         self._rotBtoI_dot = np.dot(cross_product_operator(self._vehicle_model._vel[3:6]), self._vehicle_model.rotBtoI)
-       # self._accel_linear_estimate_b = np.dot(
-       #     self._vehicle_model.rotItoB, (self._reference['acc'][0:3] - \
-       #                                   np.dot(self._rotBtoI_dot, self._vehicle_model._vel[0:3]))) + \
-       #                                   np.multiply(self._lambda[0:3], e_v_linear_b) + \
-       #                                   self._sliding_int * np.multiply(np.square(self._lambda[0:3]) / 4, e_p_linear_b)
-       # self._accel_angular_estimate_b = np.dot(self._vehicle_model.rotItoB, (self._reference['acc'][3:6] -
-       #                                         np.dot(self._rotBtoI_dot, self._vehicle_model._vel[3:6]))) + \
-       #                                         np.multiply(self._lambda[3:6], e_v_angular_b) + \
-       #                                         self._sliding_int * np.multiply(np.square(self._lambda[3:6]) / 4,
-       #                                                                         e_p_angular_b)
+        self._accel_linear_estimate_b = np.dot(
+            self._vehicle_model.rotItoB, (self._reference['acc'][0:3] - \
+                                          np.dot(self._rotBtoI_dot, self._vehicle_model._vel[0:3]))) + \
+                                          np.multiply(self._lambda[0:3], e_v_linear_b) + \
+                                          self._sliding_int * np.multiply(np.square(self._lambda[0:3]) / 4, e_p_linear_b)
+        self._accel_angular_estimate_b = np.dot(self._vehicle_model.rotItoB, (self._reference['acc'][3:6] -
+                                                np.dot(self._rotBtoI_dot, self._vehicle_model._vel[3:6]))) + \
+                                                np.multiply(self._lambda[3:6], e_v_angular_b) + \
+                                                self._sliding_int * np.multiply(np.square(self._lambda[3:6]) / 4,
+                                                                                e_p_angular_b)
         self._accel_estimate_b = np.hstack((self._accel_linear_estimate_b, self._accel_angular_estimate_b))
 
         # Equivalent control

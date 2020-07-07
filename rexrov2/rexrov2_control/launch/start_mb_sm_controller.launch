@@ -58,7 +58,7 @@ roslaunch rexrov2_control start_nmb_sm_controller.launch
     <!-- model and controller parameters -->
     <arg name="model_params_file" default="$(find rexrov2_control)/config/model_params.yaml" doc="Model parameters"/>
 
-    <include file="$(find uuv_trajectory_control)/launch/rov_mb_sm_controller.launch">
+    <include file="$(find uuv_trajectory_control)/launch/rov_mb_sm_controller1.launch">
       <arg name="uuv_name" value="$(arg uuv_name)"/>
       <arg name="model_name" value="rexrov2"/>
       <arg name="gui_on" value="$(arg gui_on)"/>

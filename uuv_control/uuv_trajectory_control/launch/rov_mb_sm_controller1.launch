@@ -25,6 +25,11 @@
   <arg name="rho_0" default="3000,3000,8000,1500,1500,8000"/>
   <arg name="drift_prevent" default="0.03"/>
 
+  <arg name="Kp" default="11993.888,11993.888,11993.888,19460.069,19460.069,19460.069"/>
+  <arg name="Kd" default="9077.459,9077.459,9077.459,18880.925,18880.925,18880.925"/>
+  <arg name="Ki" default="321.417,321.417,321.417,2096.951,2096.951,2096.951"/>
+
+
   <!-- Controller configuration file -->
   <arg name="controller_config_file" default="$(find uuv_trajectory_control)/config/controllers/mb_sm/$(arg model_name)/params.yaml"/>
   <!-- Model parameters -->
@@ -62,7 +67,7 @@
   <group if="$(arg use_params_file)">
     <group ns="$(arg uuv_name)">
       <node pkg="uuv_trajectory_control"
-            type="rov_mb_sm_controller.py"
+            type="rov_mb_sm_controller1.py"
             name="rov_mb_smcontroller"
             output="screen"
             if="$(arg use_ned_frame)">
@@ -84,7 +89,7 @@
       </node>
 
       <node pkg="uuv_trajectory_control"
-            type="rov_mb_sm_controller.py"
+            type="rov_mb_sm_controller1.py"
             name="rov_mb_smcontroller"
             output="screen"
             unless="$(arg use_ned_frame)">
@@ -110,7 +115,7 @@
   <group unless="$(arg use_params_file)">
     <group ns="$(arg uuv_name)">
       <node pkg="uuv_trajectory_control"
-            type="rov_mb_sm_controller.py"
+            type="rov_mb_sm_controller1.py"
             name="rov_mb_smcontroller"
             output="screen"
             if="$(arg use_ned_frame)">
@@ -135,11 +140,14 @@
             rho_0: [$(arg rho_0)]
             drift_prevent: $(arg drift_prevent)
             inertial_frame_id: world_ned
+            Kp: [$(arg Kp)]
+            Kd: [$(arg Kd)]
+            Ki: [$(arg Ki)]
           </rosparam>
       </node>
 
       <node pkg="uuv_trajectory_control"
-            type="rov_mb_sm_controller.py"
+            type="rov_mb_sm_controller1.py"
             name="rov_mb_smcontroller"
             output="screen"
             unless="$(arg use_ned_frame)">
@@ -164,6 +172,9 @@
             rho_0: [$(arg rho_0)]
             drift_prevent: $(arg drift_prevent)
             inertial_frame_id: world
+            Kp: [$(arg Kp)]
+            Kd: [$(arg Kd)]
+            Ki: [$(arg Ki)]
           </rosparam>
       </node>
     </group>

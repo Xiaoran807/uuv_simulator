@@ -171,7 +171,7 @@ class DPControllerBase1(object):
 	self._restoring_pub=rospy.Publisher('restoring', Vector6, queue_size=10)
 	self._sliding_pub=rospy.Publisher('slidingSurface', WrenchStamped, queue_size=1)
 	self._count_pub=rospy.Publisher('count', Int32, queue_size=10)
-	self._vehicleParameter_pub=rospy.Publisher('vehicleParameter', Int32, queue_size=10)
+	self._vehicleParameter_pub=rospy.Publisher('vehicleParameter', Float32, queue_size=10)
 	self._MParameter_pub=rospy.Publisher('MParameter', Matrix6, queue_size=10)
 	self._CParameter_pub=rospy.Publisher('CParameter', Matrix6, queue_size=10)
 	self._DParameter_pub=rospy.Publisher('DParameter', Matrix6, queue_size=10)
@@ -486,7 +486,7 @@ class DPControllerBase1(object):
 	self._count_pub.publish(msg)	
 
     def publish_vehiclePara(self,vehiPara):
-	msg=Int32()
+	msg=Float32()
 	msg.data=vehiPara
 	self._vehicleParameter_pub.publish(msg)
 

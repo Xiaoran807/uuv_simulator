@@ -24,6 +24,7 @@ class ROV_MBFLController(DPPIDControllerBase):
     _LABEL = 'PID'
     def __init__(self):
         self._tau = np.zeros(6)
+        self._tau1 = np.zeros(6)
         DPPIDControllerBase.__init__(self, False)
         self._is_init = True
         self._pid_control = np.zeros(6)
@@ -35,6 +36,7 @@ class ROV_MBFLController(DPPIDControllerBase):
         super(ROV_MBFLController, self).reset_controller()
         self._pid_control = np.zeros(6)
         self._tau = np.zeros(6)
+        self._tau1 = np.zeros(6)
 
     def update_controller(self):
         if not self._is_init:
@@ -64,13 +66,24 @@ class ROV_MBFLController(DPPIDControllerBase):
         self._vehicle_model._update_coriolis(vel)
         self._vehicle_model._update_restoring(q=self._reference['rot'], use_sname=True)
       
-        self._tau = np.dot(self._vehicle_model.Mtotal, acc) + \
+        self._tau1 = np.dot(self._vehicle_model.Mtotal, acc) + \
                     np.dot(self._vehicle_model.Ctotal, vel) + \
                     np.dot(self._vehicle_model.Dtotal, vel) + \
                     self._vehicle_model.restoring_forces
                     
+        self._tau[0] = self._pid_control[0]
+        self._tau[1] = 200
+        self._tau[2] = self._pid_control[2]
+        self._tau[3] = self._pid_control[3]
+        self._tau[4] = self._pid_control[4]
+        self._tau[5] = self._pid_control[5]
+
+        _MPara=self._vehicle_model._linear_damping
+	self.publish_MPara(_MPara)
+
         # Publish control forces and torques
-        self.publish_control_wrench(self._pid_control + self._vehicle_model.from_SNAME(self._tau))
+        #self.publish_control_wrench(self._pid_control + self._vehicle_model.from_SNAME(self._tau))
+        self.publish_control_wrench(self._tau)
         #self.publish_control_wrench(self._pid_control)
         self._last_t = t
         self._last_vel = self._vehicle_model.to_SNAME(self._reference['vel'])

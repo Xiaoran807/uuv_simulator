@@ -80,8 +80,8 @@ class ROV_MBFLController(DPPIDControllerBase):
                     self._vehicle_model.restoring_forces
                     
         # Publish control forces and torques
-        #self.publish_control_wrench(self._pid_control + self._vehicle_model.from_SNAME(self._tau))
-        self.publish_control_wrench(self._pid_control)
+        self.publish_control_wrench(self._pid_control + self._vehicle_model.from_SNAME(self._tau))
+        #self.publish_control_wrench(self._pid_control)
         self._last_t = t
         self._last_vel = self._vehicle_model.to_SNAME(self._reference['vel'])
         return True
