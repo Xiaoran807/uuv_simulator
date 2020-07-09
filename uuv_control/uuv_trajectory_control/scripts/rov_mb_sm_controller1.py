@@ -304,20 +304,53 @@ class ROV_MB_SMController(DPPIDControllerBase):
         # Compute required forces and torques wrt body frame
         #self._tau = self._ctrl_eq * self._f_eq + self._ctrl_lin * self._f_lin + self._ctrl_robust * self._f_robust
 
+        x_u=self._reference['pos'][0]
+        x_v=self._reference['pos'][1]
+        x_w=self._reference['pos'][2]
+        x_r=self.theta_wg.data
+        F_11=-1987
+        F_12=3085
+        F_13=2010.5
+        F_21=595
+        F_23=-3441
+        F_24=916
+        F_u1=-8523
+        F_u2=2643
+        F_w1=-15445
+        F_w2=5523
+
+
+
+       
+
+        error_up=x_u-self._vehicle_model._pose['pos'][0]
+        error_vp=x_v-self._vehicle_model._pose['pos'][1]
+        error_wp=x_w-self._vehicle_model._pose['pos'][2]
+        error_rp=x_r-self._vehicle_model.euler[2]
+
+        u_surface=F_u1*error_up+F_u2*self._vehicle_model._vel[0]
+        v_surface=F_11*error_vp+F_12*self._vehicle_model._vel[1]+F_13*error_rp
+        w_surface=F_w1*error_wp+F_w2*self._vehicle_model._vel[2]
+        r_surface=F_21*error_vp+F_23*error_rp+F_24*self._vehicle_model.euler[2]
+
+        f_surge=-1500*u_surface/(np.abs(u_surface)+.1)-u_surface
+        f_sway=-1500*v_surface/(np.abs(v_surface)+.1)-v_surface
+        f_heave=-3500*w_surface/(np.abs(w_surface)+.1)-w_surface
+        t_yaw=-1000*r_surface/(np.abs(r_surface)+.1)-r_surface+19000*self._errors['vel'][5]
 
 
         self._pid_control = self.update_pid()
-        self._tau[0] = 100
-        self._tau[1] = 100
-        self._tau[2] = self._pid_control[2]
+        self._tau[0] = f_surge
+        self._tau[1] = f_sway
+        self._tau[2] = f_heave
         self._tau[3] = self._pid_control[3]
         self._tau[4] = self._pid_control[4]
-        self._tau[5] = self._pid_control[5]
+        self._tau[5] = t_yaw
 
 
 
-	self._slidingSurface=self._s_b
-	self._vehi=self._vehicle_model._Ma[2,2]
+	self._slidingSurface=self._vehicle_model.restoring_forces
+	self._vehi=error_rp
 	self._restoring=self._vehicle_model._g
         self._MPara=self._vehicle_model._linear_damping
         self._CPara=self._vehicle_model._C

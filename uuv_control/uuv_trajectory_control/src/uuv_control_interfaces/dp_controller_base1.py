@@ -236,6 +236,8 @@ class DPControllerBase1(object):
         self.x_wg=Float32()
         self.y_wg=Float32()
         self.theta_wg=Float32()
+        self.pose_vehicle=np.array([0, 0, 0]);
+
 
     def __del__(self):
         # Removing logging message handlers
@@ -329,6 +331,16 @@ class DPControllerBase1(object):
             inertial_frame_id=self._local_planner.inertial_frame_id) 
 
     def objectCallback(self, data):
+        msg=Pose()
+        msg.position.x=self._vehicle_model._pose['pos'][0];
+        msg.position.y=self._vehicle_model._pose['pos'][1];
+        msg.position.z=self._vehicle_model._pose['pos'][2];
+        msg.orientation.x=self._vehicle_model._pose['rot'][0];
+        msg.orientation.y=self._vehicle_model._pose['rot'][1];
+        msg.orientation.z=self._vehicle_model._pose['rot'][2];
+        msg.orientation.w=self._vehicle_model._pose['rot'][3];
+        self.pose_vehicle=geo_maths.pose_to_xytheta(msg);
+
         self.pose=geo_maths.pose_to_xytheta(data.pose.pose);
         T_wb = geo_maths.xytheta_to_T(self.pose[0], self.pose[1], self.pose[2]);
         T_bg = geo_maths.xytheta_to_T(13, 0, 0);
