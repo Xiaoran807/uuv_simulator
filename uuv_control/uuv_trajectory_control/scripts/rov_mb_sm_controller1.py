@@ -314,7 +314,7 @@ class ROV_MB_SMController(DPPIDControllerBase):
         F_21=595
         F_23=-3441
         F_24=916
-        F_u1=-8523
+        F_u1=-31872
         F_u2=2643
         F_w1=-15445
         F_w2=5523
@@ -333,7 +333,7 @@ class ROV_MB_SMController(DPPIDControllerBase):
         w_surface=F_w1*error_wp+F_w2*self._vehicle_model._vel[2]
         r_surface=F_21*error_vp+F_23*error_rp+F_24*self._vehicle_model.euler[2]
 
-        f_surge=-1500*u_surface/(np.abs(u_surface)+.1)-u_surface
+        f_surge=-3400*u_surface/(np.abs(u_surface)+.1)-u_surface
         f_sway=-1500*v_surface/(np.abs(v_surface)+.1)-v_surface
         f_heave=-3500*w_surface/(np.abs(w_surface)+.1)-w_surface
         t_yaw=-1000*r_surface/(np.abs(r_surface)+.1)-r_surface+19000*self._errors['vel'][5]
@@ -345,12 +345,16 @@ class ROV_MB_SMController(DPPIDControllerBase):
         self._tau[2] = f_heave
         self._tau[3] = self._pid_control[3]
         self._tau[4] = self._pid_control[4]
-        self._tau[5] = t_yaw
+        self._tau[5] = self._pid_control[5]
 
 
 
 	self._slidingSurface=self._vehicle_model.restoring_forces
-	self._vehi=error_rp
+
+
+
+
+
 	self._restoring=self._vehicle_model._g
         self._MPara=self._vehicle_model._linear_damping
         self._CPara=self._vehicle_model._C
@@ -360,7 +364,17 @@ class ROV_MB_SMController(DPPIDControllerBase):
         self.publish_control_wrench(self._tau)
 	self.publish_slidingSurface(self._slidingSurface)
 	self.publish_restoring(self._restoring)
-	self.publish_vehiclePara(self._vehi)
+
+	#self.publish_ref_u(x_u)
+        #self.publish_veh_u(self._vehicle_model._pose['pos'][0])
+        #self.publish_error_up(error_up)
+        #self.publish_surface_up(u_surface)
+        #self.publish_force_up(f_surge)
+
+
+
+
+
 	self.publish_MPara(self._MPara)
 	self.publish_CPara(self._CPara)
 	self.publish_DPara(self._DPara)

@@ -171,7 +171,16 @@ class DPControllerBase1(object):
 	self._restoring_pub=rospy.Publisher('restoring', Vector6, queue_size=10)
 	self._sliding_pub=rospy.Publisher('slidingSurface', WrenchStamped, queue_size=1)
 	self._count_pub=rospy.Publisher('count', Int32, queue_size=10)
-	self._vehicleParameter_pub=rospy.Publisher('vehicleParameter', Float32, queue_size=10)
+	#self._ref_u_pub=rospy.Publisher('ref_u', Float32, queue_size=10)
+	#self._ref_v_pub=rospy.Publisher('ref_v', Float32, queue_size=10)
+	#self._ref_w_pub=rospy.Publisher('ref_w', Float32, queue_size=10)
+	#self._veh_u_pub=rospy.Publisher('veh_u', Float32, queue_size=10)
+	#self._veh_v_pub=rospy.Publisher('veh_v', Float32, queue_size=10)
+	#self._veh_w_pub=rospy.Publisher('veh_w', Float32, queue_size=10)
+	#self._error_up_pub=rospy.Publisher('error_up', Float32, queue_size=10)
+	#self._surface_up_pub=rospy.Publisher('surface_up', Float32, queue_size=10)
+	#self._force_up_pub=rospy.Publisher('force_up', Float32, queue_size=10)
+
 	self._MParameter_pub=rospy.Publisher('MParameter', Matrix6, queue_size=10)
 	self._CParameter_pub=rospy.Publisher('CParameter', Matrix6, queue_size=10)
 	self._DParameter_pub=rospy.Publisher('DParameter', Matrix6, queue_size=10)
@@ -497,10 +506,10 @@ class DPControllerBase1(object):
 	msg.data=self._count
 	self._count_pub.publish(msg)	
 
-    def publish_vehiclePara(self,vehiPara):
-	msg=Float32()
-	msg.data=vehiPara
-	self._vehicleParameter_pub.publish(msg)
+
+
+
+
 
     def publish_MPara(self,matrixPara):
 	msg=Matrix6()
