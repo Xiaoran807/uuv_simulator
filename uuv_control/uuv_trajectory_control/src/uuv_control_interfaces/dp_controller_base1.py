@@ -733,33 +733,33 @@ class DPControllerBase1(object):
 
 
               #    with delay    
-            t = rospy.get_time()
-            if t>3 and t<=85:
-                self._errors['pos'] = np.dot(rotItoB, self._reference['pos'] - self.pos_veh_prev2)
-                self._errors['rot'] = quaternion_multiply(quaternion_inverse(quat), self._reference['rot'])
-                #self._errors['vel'] = np.hstack((np.dot(rotItoB, self._reference['vel'][0:3]) - self.vel_veh_prev2[0:3],np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
-                self._errors['vel'] = np.hstack((self._reference['vel'][0:3]-self.vel_veh_prev2[0:3], self._reference['vel'][3:6]-vel[3:6]))
-            else: 
-                self._errors['pos'] = np.dot(
-                rotItoB, self._reference['pos'] - pos)
-                self._errors['rot'] = quaternion_multiply(
-                quaternion_inverse(quat), self._reference['rot'])
-                self._errors['vel'] = np.hstack((
-                np.dot(rotItoB, self._reference['vel'][0:3]) - vel[0:3],
-                np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
+         #   t = rospy.get_time()
+         #   if t>3 and t<=85:
+         #       self._errors['pos'] = np.dot(rotItoB, self._reference['pos'] - self.pos_veh_prev2)
+         #       self._errors['rot'] = quaternion_multiply(quaternion_inverse(quat), self._reference['rot'])
+         #       #self._errors['vel'] = np.hstack((np.dot(rotItoB, self._reference['vel'][0:3]) - self.vel_veh_prev2[0:3],np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
+         #       self._errors['vel'] = np.hstack((self._reference['vel'][0:3]-self.vel_veh_prev2[0:3], self._reference['vel'][3:6]-vel[3:6]))
+         #   else: 
+         #       self._errors['pos'] = np.dot(
+         #       rotItoB, self._reference['pos'] - pos)
+         #       self._errors['rot'] = quaternion_multiply(
+         #       quaternion_inverse(quat), self._reference['rot'])
+         #       self._errors['vel'] = np.hstack((
+         #       np.dot(rotItoB, self._reference['vel'][0:3]) - vel[0:3],
+         #       np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
 
 
 
 
 
             # no delay
-          #  self._errors['pos'] = np.dot(
-          #      rotItoB, self._reference['pos'] - pos)
-          #  self._errors['rot'] = quaternion_multiply(
-          #      quaternion_inverse(quat), self._reference['rot'])
-          #  self._errors['vel'] = np.hstack((
-          #      np.dot(rotItoB, self._reference['vel'][0:3]) - vel[0:3],
-          #      np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
+            self._errors['pos'] = np.dot(
+                rotItoB, self._reference['pos'] - pos)
+            self._errors['rot'] = quaternion_multiply(
+                quaternion_inverse(quat), self._reference['rot'])
+            self._errors['vel'] = np.hstack((
+                np.dot(rotItoB, self._reference['vel'][0:3]) - vel[0:3],
+                np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
 
 
               #    don't touch. with delay    
