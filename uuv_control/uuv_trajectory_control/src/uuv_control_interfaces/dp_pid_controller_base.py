@@ -15,11 +15,19 @@
 import numpy as np
 import rospy
 from uuv_control_msgs.srv import *
+
+
+# 1. comment from .dp_controller_base import DPControllerBase if tracking column
 #from .dp_controller_base import DPControllerBase
 from .dp_controller_base1 import DPControllerBase1
 
+
+# 2. comment class DPPIDControllerBase(DPControllerBase): is tracking column
 #class DPPIDControllerBase(DPControllerBase):
 class DPPIDControllerBase(DPControllerBase1):
+
+
+
     """Abstract class for PID-based controllers. The base 
     class method `update_controller` must be overridden 
     in other for a controller to work.
@@ -28,16 +36,27 @@ class DPPIDControllerBase(DPControllerBase1):
     def __init__(self, *args):
         # Start the super class
         
+
+
+        # 3. comment DPControllerBase.__init__(self, *args) is tracking column
         #DPControllerBase.__init__(self, *args)
         DPControllerBase1.__init__(self, *args)
+
+
+
+
         self._logger.info('Initializing: PID controller')
-        # Proportional gains
+
         self._Kp = np.zeros(shape=(6, 6))
-        # Derivative gains
         self._Kd = np.zeros(shape=(6, 6))
-        # Integral gains
         self._Ki = np.zeros(shape=(6, 6))
-        # Integrator component
+
+        #self._Kp = np.array([11993.888,11993.888,11993.888,19460.069,19460.069,19460.069])
+        #self._Kd = np.array([9077.459,9077.459,9077.459,18880.925,18880.925,18880.925])
+        #self._Ki = np.array([321.417,321.417,321.417,2096.951,2096.951,2096.951])
+
+
+
         self._int = np.zeros(6)
         # Error for the vehicle pose
         self._error_pose = np.zeros(6)
@@ -125,12 +144,75 @@ class DPPIDControllerBase(DPControllerBase1):
         """
         if not self.odom_is_init:
             return
-        # Update integrator
-        self._int += 0.5 * (self.error_pose_euler + self._error_pose) * self._dt
+
+        # Update integrator, no measurement delay
+        self._int += 0.5 * (self.error_pose_euler - self._error_pose) * self._dt
         # Store current pose error
         self._error_pose = self.error_pose_euler
         return np.dot(self._Kp, self.error_pose_euler) \
             + np.dot(self._Kd, self._errors['vel']) \
             + np.dot(self._Ki, self._int)
+
+     
+
+     #   # reference position measurement delay
+     #   error_pose=self.error_pose_euler_ref_d
+     #   self._int += 0.5 * (error_pose - self._error_pose) * self._dt
+     #   # Store current pose error
+     #   self._error_pose = error_pose
+     #   e_p_linear_b = self._errors_ref_d['pos']
+     #   e_v_linear_b = self._errors_ref_d['vel'][0:3]
+     #   e_p_angular_b = self.error_orientation_rpy_ref_d
+     #   e_v_angular_b = self._errors_ref_d['vel'][3:6]
+     #   e_p_b = np.hstack((e_p_linear_b, e_p_angular_b))
+     #   e_v_b = np.hstack((e_v_linear_b, e_v_angular_b))
+     #   return np.dot(self._Kp, e_p_b) \
+     #       + np.dot(self._Kd, e_v_b) \
+     #       + np.dot(self._Ki, self._int)
+
+
+     #   # Vehicle position measurement delay
+     #   error_pose=self.error_pose_euler_veh_d
+     #   self._int += 0.5 * (error_pose - self._error_pose) * self._dt
+     #   # Store current pose error
+     #   self._error_pose = error_pose
+     #   e_p_linear_b = self._errors_veh_d['pos']
+     #   e_v_linear_b = self._errors_veh_d['vel'][0:3]
+     #   e_p_angular_b = self.error_orientation_rpy_veh_d
+     #   e_v_angular_b = self._errors_veh_d['vel'][3:6]
+     #   e_p_b = np.hstack((e_p_linear_b, e_p_angular_b))
+     #   e_v_b = np.hstack((e_v_linear_b, e_v_angular_b))
+     #   return np.dot(self._Kp, e_p_b) \
+     #       + np.dot(self._Kd, e_v_b) \
+     #       + np.dot(self._Ki, self._int)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -24,6 +24,7 @@ from geometry_msgs.msg import WrenchStamped, PoseStamped, TwistStamped, \
     Vector3, Quaternion, Pose, Twist, Point
 from std_msgs.msg import Time, Float32
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 from uuv_control_interfaces.vehicle import Vehicle
 from tf_quaternion.transformations import euler_from_quaternion, \
     quaternion_multiply, quaternion_matrix, quaternion_conjugate, \
@@ -128,7 +129,7 @@ class DPControllerBase1(object):
             stamped_pose_only=self._use_stamped_poses_only,
             thrusters_only=self.thrusters_only)
 
-        self._control_saturation = 5000
+        self._control_saturation = 150000
         # TODO: Fix the saturation term and how it is applied
         if rospy.has_param('~saturation'):
             self._thrust_saturation = rospy.get_param('~saturation')
@@ -171,7 +172,11 @@ class DPControllerBase1(object):
 	self._restoring_pub=rospy.Publisher('restoring', Vector6, queue_size=10)
 	self._sliding_pub=rospy.Publisher('slidingSurface', WrenchStamped, queue_size=1)
 	self._count_pub=rospy.Publisher('count', Int32, queue_size=10)
-	#self._ref_u_pub=rospy.Publisher('ref_u', Float32, queue_size=10)
+	self._dt_pub=rospy.Publisher('dt', Float32, queue_size=10)
+	self._dt_pub1=rospy.Publisher('dt1', Float32, queue_size=10)
+
+
+	#self._ref_u_pub=rospy.Publisher('rexf_u', Float32, queue_size=10)
 	#self._ref_v_pub=rospy.Publisher('ref_v', Float32, queue_size=10)
 	#self._ref_w_pub=rospy.Publisher('ref_w', Float32, queue_size=10)
 	#self._veh_u_pub=rospy.Publisher('veh_u', Float32, queue_size=10)
@@ -186,6 +191,8 @@ class DPControllerBase1(object):
 	self._DParameter_pub=rospy.Publisher('DParameter', Matrix6, queue_size=10)
 	self._vel_pub=rospy.Publisher('vel', Vector6, queue_size=10)
         self._count=0
+        self._imu_topic_sub=rospy.Subscriber('/rexrov2/imu', Imu, self.imuCallback)
+
         # Reference with relation to the INERTIAL frame
         self._reference = dict(pos=np.zeros(3),
                                rot=np.zeros(4),
@@ -193,6 +200,9 @@ class DPControllerBase1(object):
 
         # Errors wih relation to the BODY frame
         self._errors = dict(pos=np.zeros(3),
+                            rot=np.zeros(4),
+                            vel=np.zeros(6))
+        self._errors_refDelay = dict(pos=np.zeros(3),
                             rot=np.zeros(4),
                             vel=np.zeros(6))
 
@@ -232,20 +242,107 @@ class DPControllerBase1(object):
         self._logger.info('DP controller successfully initialized')
 
         self._boxOdom_topic_sub=rospy.Subscriber('/ground_truth/stateRexRov', Odometry, self.objectCallback)
-        self.ref_boxPosition=np.array([0, 0, 0]);
+        #self.ref_boxPosition=np.array([0, 0, 0]);
+        self.ref_boxPosition=np.zeros(3);
         self.ref_boxOrientation=np.array([0, 0, 0, 0]);
         self.ref_boxVelocityLinear=np.array([0, 0, 0]);
-        self.ref_boxVelocityAngular=np.array([0, 0, 0]);
+        #self.ref_boxVelocityLinear=np.zeros(3)
+
+        #self.ref_boxVelocityLinear1=np.array([0, 0, 0]);
+        #self.ref_boxPosition_prev=np.array([0, 0, 0]);
+
+        self.ref_boxVelocityLinear1=np.zeros(3)
+        self.ref_boxPosition_prev=np.zeros(3)
+        self._prev_t=0;
+
+
+        self.ref_boxVelocityAngular=np.zeros(3)
+        #self.ref_boxVelocityAngular=np.array([0,0,0])
         self.object_position=np.array([0, 0, 0]);
         self.object_orientation=np.array([0, 0, 0, 0]);
-        self.q=np.array([0, 0, 0, 0]);
+        self.q=Quaternion
         self.object_velocityLinear=np.array([0, 0, 0]);
-        self.object_velocityAngular=np.array([0, 0, 0]);
+        self.object_velocityAngular=np.zeros(3);
         self.pose_xytheta=Pose;
         self.x_wg=Float32()
         self.y_wg=Float32()
         self.theta_wg=Float32()
         self.pose_vehicle=np.array([0, 0, 0]);
+        self.imuAccLinear=np.array([0, 0, 0]);
+        self._linear_acceleration=np.zeros(3);
+
+        self.pos_ref_prev1=np.array([0, 0, -15]);
+        self.pos_ref_prev2=np.array([0, 0, -15]);
+        self.pos_ref_prev3=np.array([0, 0, -15]);
+        self.pos_ref_prev4=np.array([0, 0, -15]);
+        self.pos_ref_prev5=np.array([0, 0, -15]);
+        self.pos_ref_prev6=np.array([0, 0, -15]);
+        self.pos_ref_prev7=np.array([0, 0, -15]);
+        self.pos_ref_prev8=np.array([0, 0, -15]);
+        self.pos_ref_prev9=np.array([0, 0, -15]);
+        self.pos_ref_prev10=np.array([0, 0, -15]);
+        self.pos_ref_prev11=np.array([0, 0, -15]);
+        self.pos_ref_prev12=np.array([0, 0, -15]);
+        self.pos_ref_prev13=np.array([0, 0, -15]);
+        self.pos_ref_prev14=np.array([0, 0, -15]);
+
+        self.rot_ref_prev1=np.zeros(4)
+        self.rot_ref_prev2=np.zeros(4)
+        self.rot_ref_prev3=np.zeros(4)
+        self.rot_ref_prev4=np.zeros(4)
+        self.rot_ref_prev5=np.zeros(4)
+        self.rot_ref_prev6=np.zeros(4)
+        self.rot_ref_prev7=np.zeros(4)
+        self.rot_ref_prev8=np.zeros(4)
+        self.rot_ref_prev9=np.zeros(4)
+        self.rot_ref_prev10=np.zeros(4)
+        self.rot_ref_prev11=np.zeros(4)
+        self.rot_ref_prev12=np.zeros(4)
+        self.rot_ref_prev13=np.zeros(4)
+        self.rot_ref_prev14=np.zeros(4)
+
+        self.vel_ref_prev1=np.zeros(6)
+        self.vel_ref_prev2=np.zeros(6)
+        self.vel_ref_prev3=np.zeros(6)
+        self.vel_ref_prev4=np.zeros(6)
+        self.vel_ref_prev5=np.zeros(6)
+        self.vel_ref_prev6=np.zeros(6)
+        self.vel_ref_prev7=np.zeros(6)
+        self.vel_ref_prev8=np.zeros(6)
+        self.vel_ref_prev9=np.zeros(6)
+        self.vel_ref_prev10=np.zeros(6)
+        self.vel_ref_prev11=np.zeros(6)
+        self.vel_ref_prev12=np.zeros(6)
+        self.vel_ref_prev13=np.zeros(6)
+        self.vel_ref_prev14=np.zeros(6)
+
+
+        self.pos_veh_prev1=np.array([-7, 0, -15]);
+        self.pos_veh_prev2=np.array([-7, 0, -15]);
+        self.pos_veh_prev3=np.array([-7, 0, -15]);
+        self.pos_veh_prev4=np.array([-7, 0, -15]);
+        self.pos_veh_prev5=np.array([-7, 0, -15]);
+        self.pos_veh_prev6=np.array([-7, 0, -15]);
+        self.pos_veh_prev7=np.array([-7, 0, -15]);
+
+
+        self.vel_veh_prev1=np.zeros(6)
+        self.vel_veh_prev2=np.zeros(6)
+        self.vel_veh_prev3=np.zeros(6)
+        self.vel_veh_prev4=np.zeros(6)
+        self.vel_veh_prev5=np.zeros(6)
+        self.vel_veh_prev6=np.zeros(6)
+        self.vel_veh_prev7=np.zeros(6)
+
+        self.quat_veh_prev1=np.array([0, 0, 0, 0.994]);
+        self.quat_veh_prev2=np.array([0, 0, 0, 0.994]);
+        self.quat_veh_prev3=np.array([0, 0, 0, 0.994]);
+        self.quat_veh_prev4=np.array([0, 0, 0, 0.994]);
+        self.quat_veh_prev5=np.array([0, 0, 0, 0.994]);
+        self.quat_veh_prev6=np.array([0, 0, 0, 0.994]);
+        self.quat_veh_prev7=np.array([0, 0, 0, 0.994]);
+
+
 
 
     def __del__(self):
@@ -378,9 +475,23 @@ class DPControllerBase1(object):
         self.ref_boxVelocityLinear[0]=self.object_velocityLinear.x
         self.ref_boxVelocityLinear[1]=self.object_velocityLinear.y
         self.ref_boxVelocityLinear[2]=self.object_velocityLinear.z
+
+        t = rospy.Time.now().to_sec()
+        dt = t - self._prev_t
+        if self._prev_t < 0.0:
+            dt = 0.05
+
+        ref_position=np.hstack((self.x_wg.data, self.y_wg.data, self.object_position.z))
+        self.ref_boxVelocityLinear1=(ref_position-self.ref_boxPosition_prev)/max(0.01,dt)
+        self.ref_boxPosition_prev=ref_position
+
+
         self.ref_boxVelocityAngular[0]=self.object_velocityAngular.x
         self.ref_boxVelocityAngular[1]=self.object_velocityAngular.y
         self.ref_boxVelocityAngular[2]=self.object_velocityAngular.z
+
+
+
 
     def _update_reference(self):
         """Call the local planner interpolator to retrieve a trajectory 
@@ -400,7 +511,106 @@ class DPControllerBase1(object):
 
             self._reference['pos'] = self.ref_boxPosition
             self._reference['rot'] = [self.q.x, self.q.y, self.q.z, self.q.w]
-            self._reference['vel'] = np.hstack((self.ref_boxVelocityLinear, self.ref_boxVelocityAngular))
+            self._reference['vel'] = np.hstack((self.ref_boxVelocityLinear1, self.ref_boxVelocityAngular))
+
+
+            pos_ref_delay1=self.pos_ref_prev1
+            pos_ref_delay2=self.pos_ref_prev2
+            pos_ref_delay3=self.pos_ref_prev3
+            pos_ref_delay4=self.pos_ref_prev4
+            pos_ref_delay5=self.pos_ref_prev5
+            pos_ref_delay6=self.pos_ref_prev6
+            pos_ref_delay7=self.pos_ref_prev7
+            pos_ref_delay8=self.pos_ref_prev8
+            pos_ref_delay9=self.pos_ref_prev9
+            pos_ref_delay10=self.pos_ref_prev10
+            pos_ref_delay11=self.pos_ref_prev11
+            pos_ref_delay12=self.pos_ref_prev12
+            pos_ref_delay13=self.pos_ref_prev13
+            pos_ref_delay14=self.pos_ref_prev14
+
+
+            self.pos_ref_prev1=self._reference['pos']
+            self.pos_ref_prev2=pos_ref_delay1
+            self.pos_ref_prev3=pos_ref_delay2
+            self.pos_ref_prev4=pos_ref_delay3
+            self.pos_ref_prev5=pos_ref_delay4
+            self.pos_ref_prev6=pos_ref_delay5
+            self.pos_ref_prev7=pos_ref_delay6
+            self.pos_ref_prev8=pos_ref_delay7
+            self.pos_ref_prev9=pos_ref_delay8
+            self.pos_ref_prev10=pos_ref_delay9
+            self.pos_ref_prev11=pos_ref_delay10
+            self.pos_ref_prev12=pos_ref_delay11
+            self.pos_ref_prev13=pos_ref_delay12
+            self.pos_ref_prev14=pos_ref_delay13
+
+            rot_ref_delay1=self.rot_ref_prev1
+            rot_ref_delay2=self.rot_ref_prev2
+            rot_ref_delay3=self.rot_ref_prev3
+            rot_ref_delay4=self.rot_ref_prev4
+            rot_ref_delay5=self.rot_ref_prev5
+            rot_ref_delay6=self.rot_ref_prev6
+            rot_ref_delay7=self.rot_ref_prev7
+            rot_ref_delay8=self.rot_ref_prev8
+            rot_ref_delay9=self.rot_ref_prev9
+            rot_ref_delay10=self.rot_ref_prev10
+            rot_ref_delay11=self.rot_ref_prev11
+            rot_ref_delay12=self.rot_ref_prev12
+            rot_ref_delay13=self.rot_ref_prev13
+
+
+
+
+            self.rot_ref_prev1=self._reference['rot']
+            self.rot_ref_prev2=rot_ref_delay1
+            self.rot_ref_prev3=rot_ref_delay2
+            self.rot_ref_prev4=rot_ref_delay3
+            self.rot_ref_prev5=rot_ref_delay4
+            self.rot_ref_prev6=rot_ref_delay5
+            self.rot_ref_prev7=rot_ref_delay6
+            self.rot_ref_prev8=rot_ref_delay7
+            self.rot_ref_prev9=rot_ref_delay8
+            self.rot_ref_prev10=rot_ref_delay9
+            self.rot_ref_prev11=rot_ref_delay10
+            self.rot_ref_prev12=rot_ref_delay11
+            self.rot_ref_prev13=rot_ref_delay12
+            self.rot_ref_prev14=rot_ref_delay13
+
+
+
+
+            vel_ref_delay1=self.vel_ref_prev1
+            vel_ref_delay2=self.vel_ref_prev2
+            vel_ref_delay3=self.vel_ref_prev3
+            vel_ref_delay4=self.vel_ref_prev4
+            vel_ref_delay5=self.vel_ref_prev5
+            vel_ref_delay6=self.vel_ref_prev6
+            vel_ref_delay7=self.vel_ref_prev7
+            vel_ref_delay8=self.vel_ref_prev8
+            vel_ref_delay9=self.vel_ref_prev9
+            vel_ref_delay10=self.vel_ref_prev10
+            vel_ref_delay11=self.vel_ref_prev11
+            vel_ref_delay12=self.vel_ref_prev12
+            vel_ref_delay13=self.vel_ref_prev13
+            vel_ref_delay14=self.vel_ref_prev14
+
+            self.vel_ref_prev1=self._reference['vel']
+            self.vel_ref_prev2=vel_ref_delay1
+            self.vel_ref_prev3=vel_ref_delay2
+            self.vel_ref_prev4=vel_ref_delay3
+            self.vel_ref_prev5=vel_ref_delay4
+            self.vel_ref_prev6=vel_ref_delay5
+            self.vel_ref_prev7=vel_ref_delay6
+            self.vel_ref_prev8=vel_ref_delay7
+            self.vel_ref_prev9=vel_ref_delay8
+            self.vel_ref_prev10=vel_ref_delay9
+            self.vel_ref_prev11=vel_ref_delay10
+            self.vel_ref_prev12=vel_ref_delay11
+            self.vel_ref_prev13=vel_ref_delay12
+            self.vel_ref_prev14=vel_ref_delay13
+
+
 
 
             #self._reference['acc'] = np.hstack((reference.a, reference.alpha))
@@ -413,16 +623,26 @@ class DPControllerBase1(object):
             msg.pose.orientation = Quaternion(*self._reference['rot'])
             msg.velocity.linear = Vector3(*self._reference['vel'][0:3])
             msg.velocity.angular = Vector3(*self._reference['vel'][3:6])
+
+
             #msg.acceleration.linear = Vector3(*self._reference['acc'][0:3])
             #msg.acceleration.angular = Vector3(*self._reference['acc'][3:6])
             self._reference_pub.publish(msg)
         return True
+
+    def imuCallback(self, data):
+        self._linear_acceleration=data.linear_acceleration
+        #self.imuAccLinear[0]=self._linear_acceleration.x
+        #self.imuAccLinear[1]=self._linear_acceleration.y
+        #self.imuAccLinear[2]=self._linear_acceleration.z
 
     def _update_time_step(self):
         """Update time step."""
         t = rospy.get_time()
         self._dt = t - self._prev_time
         self._prev_time = t
+        if self._prev_time < 0.0:
+            self._dt = 0.05
 
     def _reset_controller(self):
         """Reset reference and and error vectors."""
@@ -467,26 +687,101 @@ class DPControllerBase1(object):
             pos = self._vehicle_model.pos
             vel = self._vehicle_model.vel
             quat = self._vehicle_model.quat
-            self._errors['pos'] = np.dot(
+
+
+            pos_veh_delay1=self.pos_veh_prev1
+            pos_veh_delay2=self.pos_veh_prev2
+            pos_veh_delay3=self.pos_veh_prev3
+            pos_veh_delay4=self.pos_veh_prev4
+            pos_veh_delay5=self.pos_veh_prev5
+            pos_veh_delay6=self.pos_veh_prev6
+            self.pos_veh_prev1=self._vehicle_model.pos
+            self.pos_veh_prev2=pos_veh_delay1
+            self.pos_veh_prev3=pos_veh_delay2
+            self.pos_veh_prev4=pos_veh_delay3
+            self.pos_veh_prev5=pos_veh_delay4
+            self.pos_veh_prev6=pos_veh_delay5
+            self.pos_veh_prev7=pos_veh_delay6
+
+            vel_veh_delay1=self.vel_veh_prev1
+            vel_veh_delay2=self.vel_veh_prev2
+            vel_veh_delay3=self.vel_veh_prev3
+            vel_veh_delay4=self.vel_veh_prev4
+            vel_veh_delay5=self.vel_veh_prev5
+            vel_veh_delay6=self.vel_veh_prev6
+            self.vel_veh_prev1=self._vehicle_model.vel
+            self.vel_veh_prev2=vel_veh_delay1
+            self.vel_veh_prev3=vel_veh_delay2
+            self.vel_veh_prev4=vel_veh_delay3
+            self.vel_veh_prev5=vel_veh_delay4
+            self.vel_veh_prev6=vel_veh_delay5
+            self.vel_veh_prev7=vel_veh_delay6
+
+            quat_veh_delay1=self.quat_veh_prev1
+            quat_veh_delay2=self.quat_veh_prev2
+            quat_veh_delay3=self.quat_veh_prev3
+            quat_veh_delay4=self.quat_veh_prev4
+            quat_veh_delay5=self.quat_veh_prev5
+            quat_veh_delay6=self.quat_veh_prev6
+            self.quat_veh_prev1=self._vehicle_model.quat
+            self.quat_veh_prev2=quat_veh_delay1
+            self.quat_veh_prev3=quat_veh_delay2
+            self.quat_veh_prev4=quat_veh_delay3
+            self.quat_veh_prev5=quat_veh_delay4
+            self.quat_veh_prev6=quat_veh_delay5
+            self.quat_veh_prev7=quat_veh_delay6
+
+
+              #    with delay    
+            t = rospy.get_time()
+            if t>3 and t<=85:
+                self._errors['pos'] = np.dot(rotItoB, self._reference['pos'] - self.pos_veh_prev2)
+                self._errors['rot'] = quaternion_multiply(quaternion_inverse(quat), self._reference['rot'])
+                #self._errors['vel'] = np.hstack((np.dot(rotItoB, self._reference['vel'][0:3]) - self.vel_veh_prev2[0:3],np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
+                self._errors['vel'] = np.hstack((self._reference['vel'][0:3]-self.vel_veh_prev2[0:3], self._reference['vel'][3:6]-vel[3:6]))
+            else: 
+                self._errors['pos'] = np.dot(
                 rotItoB, self._reference['pos'] - pos)
-            #self._errors['pos'] = np.dot(
-            #    rotItoB, self.ref_boxPosition- pos)
-
-            # Update orientation error
-           # self._errors['rot'] = quaternion_multiply(
-           #     quaternion_inverse(quat), [self.q.x, self.q.y, self.q.z, self.q.w])
-            self._errors['rot'] = quaternion_multiply(
+                self._errors['rot'] = quaternion_multiply(
                 quaternion_inverse(quat), self._reference['rot'])
-
-            # Velocity error with respect to the the BODY frame
-           # self._errors['vel'] = np.hstack((
-           #     np.dot(rotItoB, self.ref_boxVelocityLinear) - vel[0:3],
-           #     np.dot(rotItoB, self.ref_boxVelocityAngular) - vel[3:6]))
-
-            self._errors['vel'] = np.hstack((
+                self._errors['vel'] = np.hstack((
                 np.dot(rotItoB, self._reference['vel'][0:3]) - vel[0:3],
                 np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
 
+
+
+
+
+            # no delay
+          #  self._errors['pos'] = np.dot(
+          #      rotItoB, self._reference['pos'] - pos)
+          #  self._errors['rot'] = quaternion_multiply(
+          #      quaternion_inverse(quat), self._reference['rot'])
+          #  self._errors['vel'] = np.hstack((
+          #      np.dot(rotItoB, self._reference['vel'][0:3]) - vel[0:3],
+          #      np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
+
+
+              #    don't touch. with delay    
+         #   t = rospy.get_time()
+         #   if t>8 and t<=85:
+         #       self._errors['pos'] = np.dot(rotItoB, self._reference['pos'] - self.pos_veh_prev3)
+         #       self._errors['rot'] = quaternion_multiply(quaternion_inverse(quat), self._reference['rot'])
+         #       #self._errors['vel'] = np.hstack((np.dot(rotItoB, self._reference['vel'][0:3]) - self.vel_veh_prev2[0:3],np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
+         #       self._errors['vel'] = np.hstack((self._reference['vel'][0:3]-self.vel_veh_prev3[0:3], self._reference['vel'][3:6]-vel[3:6]))
+         #   else: 
+         #       self._errors['pos'] = np.dot(
+         #       rotItoB, self._reference['pos'] - pos)
+         #       self._errors['rot'] = quaternion_multiply(
+         #       quaternion_inverse(quat), self._reference['rot'])
+         #       self._errors['vel'] = np.hstack((
+         #       np.dot(rotItoB, self._reference['vel'][0:3]) - vel[0:3],
+         #       np.dot(rotItoB, self._reference['vel'][3:6]) - vel[3:6]))
+
+
+
+
+         # no delay
         if self._error_pub.get_num_connections() > 0:
             stamp = rospy.Time.now()
             msg = TrajectoryPointObjectFollow()
@@ -500,14 +795,25 @@ class DPControllerBase1(object):
             msg.velocity.angular = Vector3(*np.dot(rotBtoI, self._errors['vel'][3:6]))
             self._error_pub.publish(msg)
 
+
+
+
+
+
     def count(self):
 	self._count+=1
 	msg=Int32()
 	msg.data=self._count
 	self._count_pub.publish(msg)	
+    def pub_dt(self,data):
+	msg=Float32()
+	msg.data=data
+	self._dt_pub.publish(msg)	
 
-
-
+    def pub_dt1(self,data):
+	msg=Float32()
+	msg.data=data
+	self._dt_pub1.publish(msg)
 
 
 

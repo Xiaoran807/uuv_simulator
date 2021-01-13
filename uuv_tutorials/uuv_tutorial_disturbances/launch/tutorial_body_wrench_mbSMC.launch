@@ -27,10 +27,50 @@
         <arg name="yaw" default="$(arg yaw)"/>
     </include>
 
-    <include file="$(find uuv_trajectory_control)/launch/rov_mb_sm_controller.launch">
+
+<?ignore    <include file="$(find uuv_trajectory_control)/launch/rov_mb_sm_controller.launch">
         <arg name="uuv_name" value="rexrov"/>
         <arg name="model_name" value="rexrov"/>
     </include>
+?>
+
+<?ignore    <include file="$(find uuv_trajectory_control)/launch/rov_nmb_sm_controller.launch">
+        <arg name="uuv_name" value="rexrov"/>
+        <arg name="model_name" value="rexrov"/>
+        <arg name="K" value="$(arg K)"/>
+        <arg name="Kd" value="$(arg Kd)"/>
+        <arg name="Ki" value="$(arg Ki)"/>
+        <arg name="slope" value="$(arg slope)"/>
+    </include>
+?>
+
+<?ignore    <include file="$(find uuv_trajectory_control)/launch/rov_mb_fl_controller.launch">
+        <arg name="uuv_name" value="rexrov"/>
+        <arg name="model_name" value="rexrov"/>
+    </include>
+?>
+
+<?ignore    <include file="$(find uuv_trajectory_control)/launch/rov_nl_pid_controller.launch">
+        <arg name="uuv_name" value="rexrov"/>
+        <arg name="model_name" value="rexrov"/>
+    </include>
+?>
+
+<?ignore    <include file="$(find uuv_trajectory_control)/launch/rov_pd_grav_compensation_controller.launch">
+        <arg name="uuv_name" value="rexrov"/>
+        <arg name="model_name" value="rexrov"/>
+    </include>
+?>
+
+    <include file="$(find uuv_trajectory_control)/launch/rov_pid_controller.launch">
+        <arg name="uuv_name" value="rexrov"/>
+        <arg name="model_name" value="rexrov"/>
+    </include>
+
+
+
+
+
 
     <include file="$(find uuv_control_utils)/launch/start_circular_trajectory.launch">
         <arg name="uuv_name" value="rexrov"/>
@@ -38,6 +78,17 @@
         <arg name="center_z" value="-25"/>
         <arg name="max_forward_speed" value="0.6"/>
     </include>
+
+
+    <include file="$(find uuv_control_utils)/launch/set_timed_current_perturbation.launch">
+        <arg name="starting_time" default="20"/>
+        <arg name="end_time" default="30"/>
+        <arg name="current_vel" default="1.8"/>
+        <arg name="horizontal_angle" default="-90"/>
+        <arg name="vertical_angle" default="90"/>
+    </include>
+
+
 
     <include file="$(find uuv_control_utils)/launch/apply_body_wrench.launch">
         <arg name="uuv_name" value="rexrov"/>
@@ -55,6 +106,10 @@
         <arg name="force_z" default="3000"/>
     </include>
 
+
+
+
+
     <include file="$(find uuv_control_utils)/launch/apply_body_wrench.launch">
         <arg name="uuv_name" value="rexrov"/>
         <arg name="starting_time" default="85"/>
@@ -63,5 +118,5 @@
         <arg name="torque_z" default="3000"/>
     </include>
 
-    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find uuv_gazebo)/rviz/controller_demo.rviz"/>
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find uuv_gazebo)/rviz/controller_demo.rviz"/> 
 </launch>

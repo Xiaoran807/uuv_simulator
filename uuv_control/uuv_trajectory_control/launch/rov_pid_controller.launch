@@ -20,9 +20,24 @@
   <!-- The following controller parameters have been optimized for the RexROV
        vehicle using SMAC (https://github.com/automl/SMAC3)
   -->
+<?ignore
   <arg name="Kp" default="11993.888,11993.888,11993.888,19460.069,19460.069,19460.069"/>
   <arg name="Kd" default="9077.459,9077.459,9077.459,18880.925,18880.925,18880.925"/>
   <arg name="Ki" default="321.417,321.417,321.417,2096.951,2096.951,2096.951"/>
+?>
+
+<?ignore  <!-- no vehicle measurement delay-->
+  <arg name="Kp" default="18900,18900,18900,19400,19400,19400"/>
+  <arg name="Kd" default="13070,13070,13070,10880,10880,10880"/>
+  <arg name="Ki" default="1021,1021,1021,1009,1000,1000"/>
+?>
+
+  <!-- vehicle measurement delay-->
+  <arg name="Kp" default=".1,.1,.1,1940,1940,1940"/>
+  <arg name="Kd" default=".1,.1,.1,6088,6088,6088"/>
+  <arg name="Ki" default=".1,.1,.1,1009,1009,1009"/>
+
+
 
   <arg name="controller_config_file" default="$(find uuv_trajectory_control)/config/controllers/pid/$(arg model_name)/params.yaml"/>
 

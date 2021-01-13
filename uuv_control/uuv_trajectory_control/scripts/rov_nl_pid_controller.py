@@ -71,6 +71,16 @@ class ROV_NLPIDController(DPPIDControllerBase):
         # Publish control forces and torques
         self._tau = self._pid_control - self._accel_ff + \
             self._vehicle_model.restoring_forces
+
+
+        #self._tau[0] = self._pid_control[0]
+        #self._tau[1] = self._pid_control[1]
+        #    #self._tau[2] = 100
+        #self._tau[2] = self._pid_control[2]
+        #self._tau[3] = self._pid_control[3]
+        #self._tau[4] = self._pid_control[4]
+        #self._tau[5] = self._pid_control[5]
+
         self.publish_control_wrench(self._tau)
         return True
 

@@ -438,6 +438,12 @@ class Vehicle(object):
         # Using the (x, y, z, w) format to describe quaternions
         return self.q_to_matrix(self._pose['rot'])
 
+
+
+
+
+
+
     @property
     def TItoBeuler(self):
         r, p, y = self.euler

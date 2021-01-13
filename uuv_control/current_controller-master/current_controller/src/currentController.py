@@ -29,7 +29,7 @@ class currentController():
         self.N = 0.0
     def updateCurrent(self, event):
         self.N = np.random.uniform(0, 1)
-	self.vel = np.random.uniform(0.5, 1) ## 0.5, 2
+	self.vel = np.random.uniform(0.5, 2) ## 0.5, 2
         #self.v_dir =np.cos(self.counter)
         #self.h_dir=np.sin(self.counter)
         self.v_dir = np.random.uniform(0, 4) ## 0, 4

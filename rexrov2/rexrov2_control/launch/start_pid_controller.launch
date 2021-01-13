@@ -27,9 +27,20 @@ roslaunch rexrov2_control start_pid_controller.launch
     <arg name="gui_on" default="true" doc="Start Gazebo client and RViz"/>
     <arg name="use_ned_frame" default="false" doc="If true, the reference frame is set to be NED (North-East-Down) instead of Gazebo's default ENU (East-North-Up)"/>
 
-    <arg name="Kp" default="11993.888,11993.888,11993.888,19460.069,19460.069,19460.069" doc="Coefficients for the $K_p$ diagonal matrix"/>
-    <arg name="Kd" default="9077.459,9077.459,9077.459,18880.925,18880.925,18880.925" doc="Coefficients for the $K_d$ diagonal matrix"/>
-    <arg name="Ki" default="321.417,321.417,321.417,2096.951,2096.951,2096.951" doc="Coefficients for the $K_i$ diagonal matrix"/>
+
+    <arg name="Kp" default="25890,30890,15890,38890,38890,28890" doc="Coefficients for the $K_p$ diagonal matrix"/>
+    <arg name="Kd" default="6307,6307,6307,6307,6307,6307" doc="Coefficients for the $K_d$ diagonal matrix"/>
+    <arg name="Ki" default="15021,15021,15021,15021,15021,15021" doc="Coefficients for the $K_i$ diagonal matrix"/>
+
+
+<?ignore
+    <arg name="Kp" default="48890,45890,15890,38890,38890,28890" doc="Coefficients for the $K_p$ diagonal matrix"/>
+    <arg name="Kd" default="6307,6307,6307,6307,6307,6307" doc="Coefficients for the $K_d$ diagonal matrix"/>
+    <arg name="Ki" default="15021,15021,15021,15021,15021,15021" doc="Coefficients for the $K_i$ diagonal matrix"/>
+?>
+
+
+
 
     <arg name="teleop_on" default="false" doc="Start joystick teleop node"/>
     <arg name="joy_id" default="0" doc="ID of the joystick device"/>

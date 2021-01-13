@@ -32,7 +32,7 @@
 
   <!-- REXROV2 -->
   <!--<arg name="debug" default="0"/>-->
-  <arg name="x" default="0"/>
+  <arg name="x" default="-5"/>
   <arg name="y" default="0"/>
   <arg name="z" default="-15"/>
   <arg name="roll" default="0.0"/>
@@ -65,7 +65,7 @@
     <arg name="debug" value="$(arg debug)"/>
     <arg name="x" value="$(arg x)"/>
     <arg name="y" value="$(arg y)"/>  
-    <arg name="z" value="-5"/>
+    <arg name="z" value="-15"/>
     <arg name="roll" value="$(arg roll)"/>
     <arg name="pitch" value="$(arg pitch)"/>
     <arg name="yaw" value="$(arg yaw)"/>
@@ -79,11 +79,7 @@
 
 
 
-<?ignore  <include file="$(find rexrov2_control)/launch/start_pid_controller.launch">
-    <arg name="uuv_name" default="rexrov2"/>
-    <arg name="gui_on" default="false" />
-  </include>
-?>
+
 
 <?ignore  <include file="$(find rexrov2_control)/launch/start_nmb_sm_controller.launch">
     <arg name="uuv_name" default="rexrov2"/>
@@ -103,26 +99,71 @@
   </include>
 ?>
 
+<?ignore  <include file="$(find uuv_trajectory_control)/launch/rov_pid_controller.launch">
+    <arg name="uuv_name" default="rexrov"/>
+    <arg name="gui_on" default="false" />
+  </include> 
+?>
+<?ignore
+ <include file="$(find uuv_trajectory_control)/launch/rov_nl_pid_controller.launch">
+    <arg name="uuv_name" value="rexrov"/>
+    <arg name="model_name" value="rexrov"/>
+    <arg name="use_ned_frame" value="false"/>
+  </include>
+?>
+
+
+
+
+
   <include file="$(find rexrov2_control)/launch/start_mb_sm_controller.launch">
     <arg name="uuv_name" default="rexrov2"/>
     <arg name="gui_on" default="false" />
   </include>
 
 
-
-
-<?ignore  <include file="$(find uuv_trajectory_control)/launch/rov_pid_controller.launch">
-    <arg name="uuv_name" default="rexrov"/>
+<?ignore
+  <include file="$(find rexrov2_control)/launch/start_pid_controller.launch">
+    <arg name="uuv_name" default="rexrov2"/>
     <arg name="gui_on" default="false" />
   </include>
 ?>
 
-<?ignore <include file="$(find uuv_trajectory_control)/launch/rov_nl_pid_controller.launch">
-    <arg name="uuv_name" value="rexrov"/>
-    <arg name="model_name" value="rexrov"/>
-    <arg name="use_ned_frame" value="false"/>
-  </include>
-?>
+  <include file="$(find gazebo_description)/launch/boxHydrodynamics.launch"/>  
+  <include file="$(find gazebo_description)/launch/boxSpeedPublisher.launch"/>  
+
+
+
+
+
+    <include file="$(find uuv_control_utils)/launch/set_timed_current_perturbation.launch">
+        <arg name="starting_time" default="10"/>
+        <arg name="end_time" default="23"/>
+        <arg name="current_vel" default="2"/>
+        <arg name="horizontal_angle" default="50"/>
+        <arg name="vertical_angle" default="0"/>
+    </include>
+
+    <include file="$(find uuv_control_utils)/launch/apply_body_wrench.launch">
+        <arg name="uuv_name" value="rexrov2"/>
+        <arg name="starting_time" default="30"/>
+        <arg name="duration" default="10"/>
+        <arg name="force_x" default="3000"/>
+        <arg name="force_y" default="5000"/>
+    </include>
+
+    <include file="$(find uuv_control_utils)/launch/apply_body_wrench.launch">
+        <arg name="uuv_name" value="rexrov2"/>
+        <arg name="starting_time" default="55"/>
+        <arg name="duration" default="8"/>
+        <arg name="force_y" default="3000"/>
+        <arg name="force_z" default="5000"/>
+    </include>
+
+
+
+
+
 
 
   <!-- push robot_description to factory and spawn robot in gazebo 

@@ -235,6 +235,7 @@ void ThrusterPlugin::Update(const common::UpdateInfo &_info)
   this->thrustForce = std::max(this->thrustForce, this->thrustMin);
   this->thrustForce = std::min(this->thrustForce, this->thrustMax);
 
+
   this->thrustForceStamp = _info.simTime;
   ignition::math::Vector3d force(this->thrustForce*this->thrusterAxis);
 

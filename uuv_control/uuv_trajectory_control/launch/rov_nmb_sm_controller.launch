@@ -62,7 +62,7 @@
   <group if="$(arg use_params_file)">
     <group ns="$(arg uuv_name)">
       <node pkg="uuv_trajectory_control"
-            type="rov_nmb_sm_controller1.py"
+            type="rov_nmb_sm_controller.py"
             name="rov_nmb_smcontroller"
             output="screen"
             if="$(arg use_ned_frame)">
@@ -85,7 +85,7 @@
       </node>
 
       <node pkg="uuv_trajectory_control"
-            type="rov_nmb_sm_controller1.py"
+            type="rov_nmb_sm_controller.py"
             name="rov_nmb_smcontroller"
             output="screen"
             unless="$(arg use_ned_frame)">
@@ -112,7 +112,7 @@
   <group unless="$(arg use_params_file)">
     <group ns="$(arg uuv_name)">
       <node pkg="uuv_trajectory_control"
-            type="rov_nmb_sm_controller1.py"
+            type="rov_nmb_sm_controller.py"
             name="rov_nmb_smcontroller"
             output="screen"
             if="$(arg use_ned_frame)">
@@ -138,7 +138,7 @@
       </node>
 
       <node pkg="uuv_trajectory_control"
-            type="rov_nmb_sm_controller1.py"
+            type="rov_nmb_sm_controller.py"
             name="rov_nmb_smcontroller"
             output="screen"
             unless="$(arg use_ned_frame)">
